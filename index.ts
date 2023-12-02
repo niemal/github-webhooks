@@ -28,13 +28,19 @@ new Elysia({
       }
 
       const configData:
-        | { [branch: string]: { [event: string]: Array<string> } }
+        | {
+            [branch: string]: {
+              [event: string]: { exec: Array<string>; cwd: string };
+            };
+          }
         | undefined =
         config.refs[body.repository.full_name as keyof typeof config.refs];
 
       if (event && configData[body.ref] && configData[body.ref][event]) {
-        const commandAndArguments = configData[body.ref][event];
-        const proc = Bun.spawn(commandAndArguments);
+        const commandAndArguments = configData[body.ref][event].exec;
+        const proc = Bun.spawn(commandAndArguments, {
+          cwd: configData[body.ref][event].cwd,
+        });
 
         const response = new Response(proc.stdout);
         response.text().then((text) => {

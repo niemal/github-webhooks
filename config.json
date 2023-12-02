@@ -6,7 +6,10 @@
   "refs": {
     "niemal/unitedgpt": {
       "refs/heads/main": {
-        "push": ["/test.sh"]
+        "push": {
+          "exec": ["/test.sh"],
+          "cwd": "./"
+        }
       }
     }
   }
