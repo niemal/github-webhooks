@@ -3,8 +3,10 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "build": "bun build",
-    "start": "bun start"
+    "setup": "bash setup.sh",
+    "build": "bun build --compile index.ts --outfile github-webhooks",
+    "run": "bun run index.ts",
+    "start": "bun build --compile index.ts --outfile github-webhooks && ./github-webhooks"
   },
   "devDependencies": {
     "bun-types": "latest"
