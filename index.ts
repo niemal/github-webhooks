@@ -38,13 +38,17 @@ new Elysia({
 
       if (event && configData[body.ref] && configData[body.ref][event]) {
         const commandAndArguments = configData[body.ref][event].exec;
-        const proc = Bun.spawnSync(commandAndArguments, {
+        const proc = Bun.spawn(commandAndArguments, {
           cwd: configData[body.ref][event].cwd,
         });
 
-        const response = new Response(proc.stdout);
-        response.text().then((text) => {
+        const responseOut = new Response(proc.stdout);
+        const responseErr = new Response(proc.stderr);
+        responseOut.text().then((text) => {
           console.log("[github-webhooks]", text);
+        });
+        responseErr.text().then((text) => {
+          console.log("[github-webhooks][error]", text);
         });
 
         set.status = 200;
