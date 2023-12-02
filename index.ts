@@ -8,7 +8,7 @@ new Elysia({
   },
 })
   .post(
-    "/",
+    config.basePath + "/",
     ({ body, request, set }) => {
       const event = request.headers.get("x-github-event");
       const signature = request.headers.get("x-hub-signature");
