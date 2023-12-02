@@ -1,0 +1,18 @@
+{
+  "name": "github-webhooks",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build",
+    "start": "bun start"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "elysia": "^0.7.29"
+  }
+}
