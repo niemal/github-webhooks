@@ -38,7 +38,7 @@ new Elysia({
 
       if (event && configData[body.ref] && configData[body.ref][event]) {
         const commandAndArguments = configData[body.ref][event].exec;
-        const proc = Bun.spawn(commandAndArguments, {
+        const proc = Bun.spawnSync(commandAndArguments, {
           cwd: configData[body.ref][event].cwd,
         });
 
