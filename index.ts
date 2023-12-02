@@ -1,6 +1,7 @@
 import config from "./config.json";
 import { Elysia, t } from "elysia";
 import crypto from "crypto";
+import bodyType from "./types-github.ts";
 
 new Elysia({
   serve: {
@@ -49,12 +50,7 @@ new Elysia({
       }
     },
     {
-      body: t.Object({
-        ref: t.String(),
-        repository: t.Object({
-          full_name: t.String(),
-        }),
-      }),
+      body: bodyType,
     }
   )
   .listen(config.port);
