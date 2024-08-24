@@ -43,9 +43,9 @@ new Elysia({
       const signature = request.headers.get("x-hub-signature");
 
       if (signature && config.secret) {
-        const body = await request.text();
+        const text = await request.text();
 
-        if (!(await webhooks.verify(body, signature))) {
+        if (!(await webhooks.verify(text, signature))) {
           set.status = 401;
           console.log("[github-webhooks] invalid signature, 401.");
           return "Invalid signature.";
