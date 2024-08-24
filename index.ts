@@ -28,7 +28,6 @@ new Elysia({
     const contentType = request?.headers?.get("content-type");
     console.log({ contentType });
     if (contentType === "application/json") {
-      console.log("application/json ------>");
       const arrayBuffer = await Bun.readableStreamToArrayBuffer(request.body!);
       const rawBody = Buffer.from(arrayBuffer);
       return rawBody;
@@ -41,7 +40,7 @@ new Elysia({
     };
 
     if (allOut) {
-      return JSON.stringify(buildInformation) + "\n\n\n" + allOut;
+      return JSON.stringify(buildInformation, null, 2) + "\n\n\n" + allOut;
     }
 
     return "No output.";
@@ -54,7 +53,6 @@ new Elysia({
     const bodyString = rawBody.toString();
 
     if (signature && config.secret) {
-      console.log({ bodyString });
       if (!(await webhooks.verify(bodyString, signature))) {
         set.status = 401;
         console.log("[github-webhooks] invalid signature, 401.");
@@ -99,9 +97,11 @@ new Elysia({
       responseOut
         .text()
         .then((text) => {
-          const message = "[github-webhooks] " + text;
-          console.log(message);
-          allOut += message;
+          if (!!text.length) {
+            const message = "[github-webhooks] " + text;
+            console.log(message);
+            allOut += message;
+          }
         })
         .finally(() => {
           proc = null;
@@ -109,9 +109,11 @@ new Elysia({
       responseErr
         .text()
         .then((text) => {
-          const message = "[github-webhooks][error] " + text;
-          console.error(message);
-          allOut += message;
+          if (!!text.length) {
+            const message = "[github-webhooks][error] " + text;
+            console.error(message);
+            allOut += message;
+          }
         })
         .finally(() => {
           proc = null;
