@@ -5,8 +5,8 @@ import bodyType from "./types-github.ts";
 
 let buildInformation:
   | {
-      repository: (typeof bodyType)["payload"]["repository"]["full_name"];
-      author: (typeof bodyType)["payload"]["head_commit"]["author"];
+      repository: (typeof bodyType)["repository"]["full_name"];
+      author: (typeof bodyType)["head_commit"]["author"];
       message: string;
       url: string;
       hash: string;
@@ -51,7 +51,6 @@ new Elysia({
         }
       }
 
-      const { payload } = body;
       const configData:
         | {
             [branch: string]: {
@@ -59,24 +58,24 @@ new Elysia({
             };
           }
         | undefined =
-        config.refs[payload.repository.full_name as keyof typeof config.refs];
+        config.refs[body.repository.full_name as keyof typeof config.refs];
 
-      if (event && configData[payload.ref] && configData[payload.ref][event]) {
+      if (event && configData[body.ref] && configData[body.ref][event]) {
         if (proc) {
           proc.kill(130); // 130 SIGINT
         }
 
         buildInformation = {
-          repository: payload.repository.full_name,
-          author: payload.head_commit.author,
-          message: payload.head_commit.message,
-          url: payload.head_commit.url,
-          hash: payload.head_commit.id,
+          repository: body.repository.full_name,
+          author: body.head_commit.author,
+          message: body.head_commit.message,
+          url: body.head_commit.url,
+          hash: body.head_commit.id,
         };
 
-        const commandAndArguments = configData[payload.ref][event].exec;
+        const commandAndArguments = configData[body.ref][event].exec;
         proc = Bun.spawn(commandAndArguments, {
-          cwd: configData[payload.ref][event].cwd,
+          cwd: configData[body.ref][event].cwd,
         });
 
         const responseOut = new Response(proc.stdout);
