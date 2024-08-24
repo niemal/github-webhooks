@@ -12,7 +12,7 @@ export default t.Object({
     private: t.Boolean(),
     owner: t.Object({
       name: t.String(),
-      email: t.String(),
+      email: t.Optional(t.String()),
       login: t.String(),
       id: t.Number(),
       node_id: t.String(),
