@@ -46,85 +46,84 @@ new Elysia({
 
     return "No output.";
   })
-  .post(
-    config.basePath + "/",
-    async ({ body, request, set }) => {
-      const event = request.headers.get("x-github-event");
-      const signature = request.headers.get("x-hub-signature");
+  .post(config.basePath + "/", async ({ body, request, set }) => {
+    const event = request.headers.get("x-github-event");
+    const signature = request.headers.get("x-hub-signature");
 
-      if (signature && config.secret) {
-        if (!(await webhooks.verify(body.toString(), signature))) {
-          set.status = 401;
-          console.log("[github-webhooks] invalid signature, 401.");
-          return "Invalid signature.";
+    const rawBody = body as Buffer;
+    const bodyString = rawBody.toString();
+
+    if (signature && config.secret) {
+      if (!(await webhooks.verify(bodyString, signature))) {
+        set.status = 401;
+        console.log("[github-webhooks] invalid signature, 401.");
+        return "Invalid signature.";
+      }
+    }
+
+    const myBody = JSON.parse(bodyString) as typeof bodyType;
+
+    const configData:
+      | {
+          [branch: string]: {
+            [event: string]: { exec: Array<string>; cwd: string };
+          };
         }
+      | undefined =
+      config.refs[myBody.repository.full_name as keyof typeof config.refs];
+
+    if (event && configData[myBody.ref] && configData[myBody.ref][event]) {
+      if (proc) {
+        proc.kill(130); // 130 SIGINT
       }
 
-      const configData:
-        | {
-            [branch: string]: {
-              [event: string]: { exec: Array<string>; cwd: string };
-            };
-          }
-        | undefined =
-        config.refs[body.repository.full_name as keyof typeof config.refs];
+      buildInformation = {
+        repository: myBody.repository.full_name,
+        author: myBody.head_commit.author,
+        message: myBody.head_commit.message,
+        url: myBody.head_commit.url,
+        hash: myBody.head_commit.id,
+      };
 
-      if (event && configData[body.ref] && configData[body.ref][event]) {
-        if (proc) {
-          proc.kill(130); // 130 SIGINT
-        }
+      const commandAndArguments = configData[myBody.ref][event].exec;
+      proc = Bun.spawn(commandAndArguments, {
+        cwd: configData[myBody.ref][event].cwd,
+      });
 
-        buildInformation = {
-          repository: body.repository.full_name,
-          author: body.head_commit.author,
-          message: body.head_commit.message,
-          url: body.head_commit.url,
-          hash: body.head_commit.id,
-        };
+      const responseOut = new Response(proc.stdout);
+      const responseErr = new Response(proc.stderr);
 
-        const commandAndArguments = configData[body.ref][event].exec;
-        proc = Bun.spawn(commandAndArguments, {
-          cwd: configData[body.ref][event].cwd,
+      allOut = "";
+
+      responseOut
+        .text()
+        .then((text) => {
+          const message = "[github-webhooks] " + text;
+          console.log(message);
+          allOut += message;
+        })
+        .finally(() => {
+          proc = null;
+        });
+      responseErr
+        .text()
+        .then((text) => {
+          const message = "[github-webhooks][error] " + text;
+          console.error(message);
+          allOut += message;
+        })
+        .finally(() => {
+          proc = null;
         });
 
-        const responseOut = new Response(proc.stdout);
-        const responseErr = new Response(proc.stderr);
-
-        allOut = "";
-
-        responseOut
-          .text()
-          .then((text) => {
-            const message = "[github-webhooks] " + text;
-            console.log(message);
-            allOut += message;
-          })
-          .finally(() => {
-            proc = null;
-          });
-        responseErr
-          .text()
-          .then((text) => {
-            const message = "[github-webhooks][error] " + text;
-            console.error(message);
-            allOut += message;
-          })
-          .finally(() => {
-            proc = null;
-          });
-
-        set.status = 200;
-        return "OK";
-      } else {
-        set.status = 404;
-        console.log("[github-webhooks] repository not found, 404.");
-        return "Repository not found.";
-      }
-    },
-    {
-      body: bodyType,
+      set.status = 200;
+      return "OK";
+    } else {
+      set.status = 404;
+      console.log("[github-webhooks] repository not found, 404.");
+      return "Repository not found.";
     }
-  )
+  })
   .listen(config.port);
 
 console.log(
