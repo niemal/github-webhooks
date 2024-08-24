@@ -45,6 +45,7 @@ new Elysia({
           .digest("hex");
 
         if (signature !== `sha1=${hash}`) {
+          console.log({ signature, hash });
           set.status = 401;
           console.log("[github-webhooks] invalid signature detected, 401.");
           return "Invalid signature.";
