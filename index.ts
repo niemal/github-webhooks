@@ -40,11 +40,20 @@ new Elysia({
 
       if (signature && config.secret) {
         const hash = crypto
-          .createHmac("sha1", config.secret)
+          .createHmac("sha256", config.secret)
           .update(signature)
           .digest("hex");
 
-        if (signature !== `sha1=${hash}`) {
+        const expectedSignature = `sha1=${hash}`;
+
+        // Convert both strings to Uint8Array objects
+        const signatureBuffer = new TextEncoder().encode(signature);
+        const expectedSignatureBuffer = new TextEncoder().encode(
+          expectedSignature
+        );
+
+        // Perform timing-safe comparison
+        if (!crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer)) {
           console.log({ signature, hash });
           set.status = 401;
           console.log("[github-webhooks] invalid signature detected, 401.");
