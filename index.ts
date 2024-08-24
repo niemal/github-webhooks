@@ -1,7 +1,11 @@
 import config from "./config.json";
 import { Elysia, t } from "elysia";
-import crypto from "crypto";
 import bodyType from "./types-github.ts";
+import { Webhooks } from "@octokit/webhooks";
+
+const webhooks = new Webhooks({
+  secret: config?.secret ?? "",
+});
 
 let buildInformation:
   | {
@@ -34,29 +38,16 @@ new Elysia({
   })
   .post(
     config.basePath + "/",
-    ({ body, request, set }) => {
+    async ({ body, request, set }) => {
       const event = request.headers.get("x-github-event");
       const signature = request.headers.get("x-hub-signature");
 
       if (signature && config.secret) {
-        const hash = crypto
-          .createHmac("sha256", config.secret)
-          .update(signature)
-          .digest("hex");
+        const body = await request.text();
 
-        const expectedSignature = `sha1=${hash}`;
-
-        // Convert both strings to Uint8Array objects
-        const signatureBuffer = new TextEncoder().encode(signature);
-        const expectedSignatureBuffer = new TextEncoder().encode(
-          expectedSignature
-        );
-
-        // Perform timing-safe comparison
-        if (!crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer)) {
-          console.log({ signature, hash });
+        if (!(await webhooks.verify(body, signature))) {
           set.status = 401;
-          console.log("[github-webhooks] invalid signature detected, 401.");
+          console.log("[github-webhooks] invalid signature, 401.");
           return "Invalid signature.";
         }
       }
