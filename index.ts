@@ -24,6 +24,13 @@ new Elysia({
     hostname: config.hostname,
   },
 })
+  .onParse(async ({ request, headers }) => {
+    if (headers["content-type"] === "application/json; charset=utf-8") {
+      const arrayBuffer = await Bun.readableStreamToArrayBuffer(request.body!);
+      const rawBody = Buffer.from(arrayBuffer);
+      return rawBody;
+    }
+  })
   .get(config.basePath + "/build-output", ({ set }) => {
     set.status = 200;
     set.headers = {
@@ -49,13 +56,15 @@ new Elysia({
         //     await Bun.readableStreamToArrayBuffer(request.body)
         //   ).toString();
 
-        if (!(await webhooks.verify(JSON.stringify(body), signature))) {
+        if (!(await webhooks.verify(body.toString(), signature))) {
           set.status = 401;
           console.log("[github-webhooks] invalid signature, 401.");
           return "Invalid signature.";
         }
         // }
       }
+
+      body = JSON.parse(body.toString());
 
       const configData:
         | {
