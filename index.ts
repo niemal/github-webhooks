@@ -26,7 +26,6 @@ new Elysia({
 })
   .onParse(async ({ request }) => {
     const contentType = request?.headers?.get("content-type");
-    console.log({ contentType });
     if (contentType === "application/json") {
       const arrayBuffer = await Bun.readableStreamToArrayBuffer(request.body!);
       const rawBody = Buffer.from(arrayBuffer);
@@ -104,6 +103,7 @@ new Elysia({
           }
         })
         .finally(() => {
+          allOut += "[github-webhooks] reached end of standard output.";
           proc = null;
         });
       responseErr
@@ -116,6 +116,7 @@ new Elysia({
           }
         })
         .finally(() => {
+          allOut += "[github-webhooks] reached end of error output.";
           proc = null;
         });
 
