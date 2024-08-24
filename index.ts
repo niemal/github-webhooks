@@ -20,7 +20,7 @@ new Elysia({
     hostname: config.hostname,
   },
 })
-  .get("/build-output", ({ set }) => {
+  .get(config.basePath + "/build-output", ({ set }) => {
     set.status = 200;
     set.headers = {
       "Content-Type": "text/plain",
