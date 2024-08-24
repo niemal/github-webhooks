@@ -27,8 +27,8 @@ new Elysia({
   .onParse(async ({ request }) => {
     const contentType = request?.headers?.get("content-type");
     console.log({ contentType });
-    if (contentType === "application/json; charset=utf-8") {
-      console.log("application/json; charset=utf-8 ------>");
+    if (contentType === "application/json") {
+      console.log("application/json ------>");
       const arrayBuffer = await Bun.readableStreamToArrayBuffer(request.body!);
       const rawBody = Buffer.from(arrayBuffer);
       return rawBody;
