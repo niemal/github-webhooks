@@ -48,7 +48,7 @@ new Elysia({
   })
   .post(config.basePath + "/", async ({ body, request, set }) => {
     const event = request.headers.get("x-github-event");
-    const signature = request.headers.get("x-hub-signature");
+    const signature = request.headers.get("x-hub-signature-256");
 
     const rawBody = body as Buffer;
     const bodyString = rawBody.toString();
