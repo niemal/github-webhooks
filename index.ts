@@ -57,7 +57,7 @@ new Elysia({
         //     await Bun.readableStreamToArrayBuffer(request.body)
         //   ).toString();
 
-        if (!(await webhooks.verify(body.toString(), signature))) {
+        if (!(await webhooks.verify(body.toString(), config.secret))) {
           set.status = 401;
           console.log("[github-webhooks] invalid signature, 401.");
           return "Invalid signature.";
