@@ -72,7 +72,7 @@ new Elysia({
 
     if (event && configData[myBody.ref] && configData[myBody.ref][event]) {
       if (proc) {
-        proc.kill(130); // 130 SIGINT
+        proc.kill();
       }
 
       buildInformation = {
