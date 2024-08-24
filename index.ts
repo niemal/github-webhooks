@@ -54,6 +54,7 @@ new Elysia({
     const bodyString = rawBody.toString();
 
     if (signature && config.secret) {
+      console.log({ bodyString });
       if (!(await webhooks.verify(bodyString, signature))) {
         set.status = 401;
         console.log("[github-webhooks] invalid signature, 401.");
