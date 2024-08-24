@@ -26,6 +26,7 @@ new Elysia({
 })
   .onParse(async ({ request }) => {
     const contentType = request?.headers?.get("content-type");
+    console.log({ contentType });
     if (contentType === "application/json; charset=utf-8") {
       console.log("application/json; charset=utf-8 ------>");
       const arrayBuffer = await Bun.readableStreamToArrayBuffer(request.body!);
@@ -52,8 +53,7 @@ new Elysia({
       const signature = request.headers.get("x-hub-signature");
 
       if (signature && config.secret) {
-        const text = await request.text();
-        if (!(await webhooks.verify(text, signature))) {
+        if (!(await webhooks.verify(body.toString(), signature))) {
           set.status = 401;
           console.log("[github-webhooks] invalid signature, 401.");
           return "Invalid signature.";
