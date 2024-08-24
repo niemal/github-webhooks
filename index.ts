@@ -93,32 +93,20 @@ new Elysia({
 
       allOut = "";
 
-      responseOut
-        .text()
-        .then((text) => {
-          if (!!text.length) {
-            const message = "[github-webhooks] " + text;
-            console.log(message);
-            allOut += message;
-          }
-        })
-        .finally(() => {
-          allOut += "[github-webhooks] reached end of standard output.";
-          proc = null;
-        });
-      responseErr
-        .text()
-        .then((text) => {
-          if (!!text.length) {
-            const message = "[github-webhooks][error] " + text;
-            console.error(message);
-            allOut += message;
-          }
-        })
-        .finally(() => {
-          allOut += "[github-webhooks] reached end of error output.";
-          proc = null;
-        });
+      responseOut.text().then((text) => {
+        if (!!text.length) {
+          const message = "[github-webhooks] " + text;
+          console.log(message);
+          allOut += message;
+        }
+      });
+      responseErr.text().then((text) => {
+        if (!!text.length) {
+          const message = "[github-webhooks][error] " + text;
+          console.error(message);
+          allOut += message;
+        }
+      });
 
       set.status = 200;
       return "OK";
