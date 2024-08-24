@@ -132,6 +132,7 @@ export default t.Object({
     type: t.String(),
     site_admin: t.Boolean(),
   }),
+  organization: t.Any(),
   created: t.Boolean(),
   deleted: t.Boolean(),
   forced: t.Boolean(),
